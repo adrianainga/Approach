@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Past Tense Unjumble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1f3a2e;
+    --bg-panel:#24443a;
+    --bg-panel-light:#2c5245;
+    --chalk:#f5f1e6;
+    --chalk-dim:#c9d4c9;
+    --tile-bg:#f4ebd9;
+    --tile-bg-hover:#fff8e8;
+    --tile-text:#2b2b26;
+    --tile-border:#d8c9a8;
+    --accent-teal:#5aa6a0;
+    --accent-teal-dark:#438f89;
+    --success:#8fcb8b;
+    --success-dark:#5fa85c;
+    --error:#e2725b;
+    --error-dark:#c65640;
+    --amber:#e3b23c;
+    --slot-border:#6b8f7c;
+    --shadow:rgba(0,0,0,0.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at top left, rgba(255,255,255,0.03), transparent 60%),
+      radial-gradient(ellipse at bottom right, rgba(255,255,255,0.03), transparent 60%),
+      var(--bg);
+    font-family:'Nunito', sans-serif;
+    color:var(--chalk);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:24px 14px 60px;
+  }
+  .wrap{
+    width:100%;
+    max-width:760px;
+  }
+  .board{
+    background:var(--bg-panel);
+    border-radius:18px;
+    padding:22px 22px 26px;
+    box-shadow:0 20px 50px var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.04);
+    position:relative;
+    overflow:hidden;
+  }
+  .board::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 100% 34px;
+    pointer-events:none;
+  }
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    position:relative;
+    z-index:1;
+  }
+  h1{
+    font-family:'Kalam', cursive;
+    font-size:1.7rem;
+    margin:0 0 2px;
+    color:var(--chalk);
+    letter-spacing:0.3px;
+  }
+  .sub{
+    font-size:0.82rem;
+    color:var(--chalk-dim);
+    margin:0;
+  }
+  .top-right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .score-pill{
+    font-family:'Space Mono', monospace;
+    background:var(--bg-panel-light);
+    border-radius:999px;
+    padding:6px 14px;
+    font-size:0.85rem;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    white-space:nowrap;
+  }
+  .mute-btn{
+    background:var(--bg-panel-light);
+    border:none;
+    color:var(--chalk);
+    width:36px;height:36px;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:1rem;
+    display:flex;align-items:center;justify-content:center;
+    transition:background 0.15s;
+  }
+  .mute-btn:hover{background:var(--accent-teal-dark);}
+  .mute-btn:focus-visible, .tile:focus-visible, .btn:focus-visible{
+    outline:2px solid var(--amber);
+    outline-offset:2px;
+  }
+
+  .meta-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:16px;
+    position:relative;
+    z-index:1;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .progress-dots{
+    display:flex;
+    gap:5px;
+    flex-wrap:wrap;
+  }
+  .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:rgba(255,255,255,0.18);
+    transition:background 0.2s, transform 0.2s;
+  }
+  .dot.done{background:var(--success);}
+  .dot.current{background:var(--amber); transform:scale(1.35);}
+  .timer{
+    font-family:'Space Mono', monospace;
+    font-size:0.95rem;
+    background:var(--bg-panel-light);
+    padding:6px 12px;
+    border-radius:999px;
+    transition:color 0.2s, background 0.2s;
+  }
+  .timer.warn{color:#2b2b26; background:var(--amber);}
+  .timer.danger{color:#fff; background:var(--error); animation:pulse 0.8s infinite;}
+  @keyframes pulse{ 0%,100%{transform:scale(1);} 50%{transform:scale(1.06);} }
+
+  .sentence-line{
+    margin-top:26px;
+    position:relative;
+    z-index:1;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    min-height:64px;
+    padding:14px 10px 18px;
+    border-bottom:2px solid var(--slot-border);
+  }
+  .sentence-line.shake{ animation:shake 0.4s; }
+  @keyframes shake{
+    10%,90%{transform:translateX(-2px);}
+    20%,80%{transform:translateX(4px);}
+    30%,50%,70%{transform:translateX(-7px);}
+    40%,60%{transform:translateX(7px);}
+  }
+
+  .slot{
+    min-width:64px;
+    height:46px;
+    border-bottom:2px dashed rgba(245,241,230,0.35);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0 2px;
+    transition:border-color 0.15s, background 0.15s;
+    border-radius:6px 6px 0 0;
+  }
+  .slot.drag-over{
+    background:rgba(90,166,160,0.18);
+    border-color:var(--accent-teal);
+  }
+  .slot.wrong-flash{
+    animation:flashred 0.5s;
+  }
+  @keyframes flashred{
+    0%,100%{background:transparent;}
+    40%{background:rgba(226,114,91,0.35);}
+  }
+  .slot.verb-highlight .tile{
+    background:var(--amber);
+    color:#2b2b26;
+    box-shadow:0 0 0 2px #fff6dd, 0 6px 14px rgba(0,0,0,0.3);
+  }
+
+  .bank-label{
+    font-size:0.75rem;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--chalk-dim);
+    margin:22px 0 8px;
+    position:relative;
+    z-index:1;
+  }
+  .bank{
+    position:relative;
+    z-index:1;
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    min-height:58px;
+    padding:10px;
+    border-radius:12px;
+    background:rgba(0,0,0,0.12);
+  }
+  .bank.drag-over{
+    background:rgba(226,114,91,0.12);
+  }
+
+  .tile{
+    font-family:'Nunito', sans-serif;
+    font-weight:700;
+    font-size:0.98rem;
+    background:var(--tile-bg);
+    color:var(--tile-text);
+    padding:9px 16px;
+    border-radius:9px;
+    border:1px solid var(--tile-border);
+    cursor:grab;
+    user-select:none;
+    touch-action:none;
+    box-shadow:0 3px 0 var(--tile-border), 0 6px 10px rgba(0,0,0,0.25);
+    transition:transform 0.12s, box-shadow 0.12s;
+  }
+  .tile:hover{ transform:translateY(-2px); background:var(--tile-bg-hover); }
+  .tile:active{ cursor:grabbing; }
+  .tile.dragging{
+    opacity:0.35;
+  }
+  .tile.ghost{
+    position:fixed;
+    z-index:999;
+    pointer-events:none;
+    transform:translate(-50%,-50%) scale(1.08) rotate(-2deg);
+    box-shadow:0 10px 24px rgba(0,0,0,0.45);
+  }
+  .tile.correct-pop{
+    animation:pop 0.4s;
+  }
+  @keyframes pop{
+    0%{transform:scale(1);}
+    40%{transform:scale(1.12);}
+    100%{transform:scale(1);}
+  }
+
+  .controls{
+    position:relative;
+    z-index:1;
+    display:flex;
+    gap:10px;
+    margin-top:22px;
+    flex-wrap:wrap;
+  }
+  .btn{
+    font-family:'Nunito', sans-serif;
+    font-weight:800;
+    font-size:0.88rem;
+    border:none;
+    border-radius:10px;
+    padding:11px 18px;
+    cursor:pointer;
+    transition:transform 0.1s, filter 0.15s;
+    display:flex;align-items:center;gap:6px;
+  }
+  .btn:hover{ filter:brightness(1.08); }
+  .btn:active{ transform:translateY(1px); }
+  .btn:disabled{ opacity:0.45; cursor:not-allowed; filter:none; }
+  .btn-primary{ background:var(--accent-teal); color:#0d211c; }
+  .btn-ghost{ background:var(--bg-panel-light); color:var(--chalk); }
+  .btn-hint{ background:var(--amber); color:#2b2b26; }
+
+  .feedback{
+    position:relative;
+    z-index:1;
+    margin-top:16px;
+    font-family:'Kalam', cursive;
+    font-size:1.05rem;
+    min-height:1.4em;
+    opacity:0;
+    transform:translateY(-6px);
+    transition:opacity 0.25s, transform 0.25s;
+  }
+  .feedback.show{ opacity:1; transform:translateY(0); }
+  .feedback.good{ color:var(--success); }
+  .feedback.bad{ color:var(--error); }
+  .feedback.info{ color:var(--amber); }
+
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(10,20,16,0.78);
+    display:flex; align-items:center; justify-content:center;
+    padding:20px;
+    z-index:1000;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.25s;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+  .report{
+    background:var(--tile-bg);
+    color:var(--tile-text);
+    border-radius:16px;
+    padding:30px 28px;
+    max-width:420px;
+    width:100%;
+    text-align:center;
+    box-shadow:0 24px 60px rgba(0,0,0,0.5);
+  }
+  .report h2{
+    font-family:'Kalam', cursive;
+    font-size:1.6rem;
+    margin:0 0 4px;
+  }
+  .stars{ font-size:2rem; margin:10px 0; letter-spacing:6px; }
+  .report-stats{
+    font-family:'Space Mono', monospace;
+    font-size:0.88rem;
+    background:rgba(0,0,0,0.06);
+    border-radius:10px;
+    padding:14px;
+    margin:16px 0;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    text-align:left;
+  }
+  .report-stats span b{ float:right; }
+
+  footer.hint-note{
+    position:relative; z-index:1;
+    font-size:0.72rem;
+    color:var(--chalk-dim);
+    margin-top:14px;
+  }
+
+  @media (max-width:480px){
+    h1{font-size:1.4rem;}
+    .tile{font-size:0.88rem; padding:8px 12px;}
+    .slot{min-width:52px; height:40px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="board" id="board">
+    <header>
+      <div>
+        <h1>✎ Past Tense Unjumble</h1>
+        <p class="sub">Drag the words into place to rebuild each sentence.</p>
+      </div>
+      <div class="top-right">
+        <div class="score-pill">★ <span id="scoreVal">0</span></div>
+        <button class="mute-btn" id="muteBtn" title="Toggle sound" aria-label="Toggle sound">🔊</button>
+      </div>
+    </header>
+
+    <div class="meta-row">
+      <div class="progress-dots" id="dots"></div>
+      <div class="timer" id="timer">00:45</div>
+    </div>
+
+    <div class="sentence-line" id="sentenceLine"></div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <div class="bank-label">Word bank — drag or tap a word</div>
+    <div class="bank" id="bank"></div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="checkBtn">✓ Check sentence</button>
+      <button class="btn btn-hint" id="hintBtn">💡 Hint</button>
+      <button class="btn btn-ghost" id="resetBtn">↻ Reshuffle</button>
+    </div>
+
+    <footer class="hint-note">Tip: tap a word to auto-place it in the next open slot, or drag it exactly where you want it.</footer>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="report">
+    <h2 id="reportTitle">Nice work!</h2>
+    <div class="stars" id="reportStars">★★★</div>
+    <div class="report-stats" id="reportStats"></div>
+    <button class="btn btn-primary" id="playAgainBtn" style="width:100%; justify-content:center;">Play again</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Data ---------- */
+  const SENTENCES = [
+    { text:"I visited my grandmother last weekend.", verb:"visited" },
+    { text:"She cooked dinner for the whole family.", verb:"cooked" },
+    { text:"They watched a movie last night.", verb:"watched" },
+    { text:"He finished his homework before dinner.", verb:"finished" },
+    { text:"We traveled to Spain two summers ago.", verb:"traveled" },
+    { text:"The dog barked loudly at the mailman.", verb:"barked" },
+    { text:"I studied English for three hours yesterday.", verb:"studied" },
+    { text:"She bought a new dress at the mall.", verb:"bought" },
+    { text:"They played soccer in the park.", verb:"played" },
+    { text:"He wrote a letter to his friend.", verb:"wrote" },
+    { text:"We walked to school every day last year.", verb:"walked" },
+    { text:"The teacher explained the lesson clearly.", verb:"explained" },
+    { text:"I saw a beautiful sunset yesterday.", verb:"saw" },
+    { text:"She called me twice this morning.", verb:"called" },
+    { text:"They arrived at the airport early.", verb:"arrived" }
+  ];
+  const TIME_PER_SENTENCE = 45;
+
+  /* ---------- State ---------- */
+  let order = [];          // shuffled sentence indices for this playthrough
+  let roundIndex = 0;      // which round (0..14)
+  let words = [];          // correct word order for current sentence
+  let verbIndex = -1;
+  let slots = [];          // array of {id, word} or null
+  let bankOrder = [];      // array of tile ids in bank
+  let tileWord = {};       // id -> word text
+  let idCounter = 0;
+  let score = 0;
+  let wrongAttempts = 0;
+  let hintsUsed = 0;
+  let timeLeft = TIME_PER_SENTENCE;
+  let timerHandle = null;
+  let locked = false;      // true while showing feedback / between rounds
+  let muted = false;
+  let audioCtx = null;
+
+  let dragState = null;    // {sourceType:'bank'|'slot', sourceIndex, id, ghostEl, moved}
+
+  /* ---------- DOM refs ---------- */
+  const $ = (id) => document.getElementById(id);
+  const dotsEl = $('dots');
+  const timerEl = $('timer');
+  const lineEl = $('sentenceLine');
+  const bankEl = $('bank');
+  const feedbackEl = $('feedback');
+  const scoreValEl = $('scoreVal');
+  const checkBtn = $('checkBtn');
+  const hintBtn = $('hintBtn');
+  const resetBtn = $('resetBtn');
+  const muteBtn = $('muteBtn');
+  const overlay = $('overlay');
+  const playAgainBtn = $('playAgainBtn');
+
+  /* ---------- Sound ---------- */
+  function getCtx(){
+    if(!audioCtx){
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+  function tone(freq, start, dur, type, vol){
+    if(muted) return;
+    try{
+      const c = getCtx();
+      const o = c.createOscillator();
+      const g = c.createGain();
+      o.type = type || 'sine';
+      o.frequency.value = freq;
+      const t0 = c.currentTime + start;
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(vol || 0.14, t0 + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+      o.connect(g); g.connect(c.destination);
+      o.start(t0);
+      o.stop(t0 + dur + 0.02);
+    }catch(e){ /* audio not available, fail silently */ }
+  }
+  const sfx = {
+    grab: () => tone(440, 0, 0.07, 'triangle', 0.09),
+    drop: () => tone(320, 0, 0.08, 'triangle', 0.11),
+    correct: () => { tone(523,0,0.12,'sine',0.15); tone(659,0.1,0.12,'sine',0.15); tone(784,0.2,0.2,'sine',0.16); },
+    wrong: () => tone(170, 0, 0.28, 'sawtooth', 0.11),
+    hint: () => { tone(600,0,0.09,'sine',0.1); tone(760,0.09,0.12,'sine',0.1); },
+    tick: () => tone(880, 0, 0.04, 'square', 0.05),
+    complete: () => { [523,659,784,1046].forEach((f,i)=>tone(f, i*0.13, 0.18, 'sine', 0.16)); }
+  };
+
+  /* ---------- Utilities ---------- */
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+  function fmtTime(s){
+    const m = Math.floor(s/60).toString().padStart(2,'0');
+    const sec = (s%60).toString().padStart(2,'0');
+    return m+':'+sec;
+  }
+
+  /* ---------- Round setup ---------- */
+  function buildDots(){
+    dotsEl.innerHTML = '';
+    for(let i=0;i<SENTENCES.length;i++){
+      const d = document.createElement('div');
+      d.className = 'dot';
+      dotsEl.appendChild(d);
+    }
+  }
+  function updateDots(){
+    const kids = dotsEl.children;
+    for(let i=0;i<kids.length;i++){
+      kids[i].className = 'dot' + (i < roundIndex ? ' done' : (i === roundIndex ? ' current' : ''));
+    }
+  }
+
+  function startRound(){
+    locked = false;
+    wrongAttempts = 0;
+    hintsUsed = 0;
+    timeLeft = TIME_PER_SENTENCE;
+    hintBtn.disabled = false;
+    checkBtn.disabled = false;
+
+    const sIdx = order[roundIndex];
+    const sentence = SENTENCES[sIdx];
+    words = sentence.text.split(' ');
+    verbIndex = words.findIndex(w => w.toLowerCase().replace(/[.,!?]/g,'') === sentence.verb.toLowerCase());
+
+    slots = new Array(words.length).fill(null);
+    tileWord = {};
+    const shuffledWords = shuffle(words.map((w, i) => ({w, i})));
+    bankOrder = shuffledWords.map(item => {
+      const id = 'tile' + (idCounter++);
+      tileWord[id] = item.w;
+      return id;
+    });
+
+    updateDots();
+    renderSlots();
+    renderBank();
+    setFeedback('', '');
+    updateTimerDisplay();
+    startTimer();
+  }
+
+  function renderSlots(){
+    lineEl.innerHTML = '';
+    slots.forEach((slot, i) => {
+      const s = document.createElement('div');
+      s.className = 'slot';
+      s.dataset.slotIndex = i;
+      if(slot){
+        s.appendChild(makeTile(slot.id, slot.word, 'slot', i));
+      }
+      lineEl.appendChild(s);
+    });
+  }
+
+  function renderBank(){
+    bankEl.innerHTML = '';
+    bankOrder.forEach((id) => {
+      bankEl.appendChild(makeTile(id, tileWord[id], 'bank', null));
+    });
+  }
+
+  function makeTile(id, word, sourceType, sourceIndex){
+    const t = document.createElement('div');
+    t.className = 'tile';
+    t.textContent = word;
+    t.dataset.id = id;
+    t.tabIndex = 0;
+    t.setAttribute('role','button');
+    t.setAttribute('aria-label', (sourceType === 'bank' ? 'Place word ' : 'Remove word ') + word);
+    t.addEventListener('pointerdown', (e) => onPointerDown(e, id, sourceType, sourceIndex));
+    t.addEventListener('click', (e) => onTileClick(e, id, sourceType, sourceIndex));
+    t.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        onTileClick(e, id, sourceType, sourceIndex);
+      }
+    });
+    return t;
+  }
+
+  /* ---------- Tap-to-place fallback ---------- */
+  function onTileClick(e, id, sourceType){
+    if(locked || dragState) return; // ignore click right after a real drag
+    if(sourceType === 'bank'){
+      placeInFirstEmptySlot(id);
+    } else {
+      returnToBank(id);
+    }
+    sfx.drop();
+    maybeAutoCheck();
+  }
+
+  function placeInFirstEmptySlot(id){
+    const emptyIdx = slots.findIndex(s => s === null);
+    if(emptyIdx === -1) return;
+    bankOrder = bankOrder.filter(x => x !== id);
+    slots[emptyIdx] = { id, word: tileWord[id] };
+    renderSlots();
+    renderBank();
+  }
+  function returnToBank(id){
+    const idx = slots.findIndex(s => s && s.id === id);
+    if(idx === -1) return;
+    slots[idx] = null;
+    bankOrder.push(id);
+    renderSlots();
+    renderBank();
+  }
+
+  /* ---------- Pointer drag ---------- */
+  function onPointerDown(e, id, sourceType, sourceIndex){
+    if(locked) return;
+    e.preventDefault();
+    const tileEl = e.currentTarget;
+    const rect = tileEl.getBoundingClientRect();
+    sfx.grab();
+
+    const ghost = document.createElement('div');
+    ghost.className = 'tile ghost';
+    ghost.textContent = tileWord[id];
+    ghost.style.left = e.clientX + 'px';
+    ghost.style.top = e.clientY + 'px';
+    ghost.style.width = rect.width + 'px';
+    document.body.appendChild(ghost);
+    tileEl.classList.add('dragging');
+
+    dragState = { sourceType, sourceIndex, id, ghostEl: ghost, moved:false, originEl: tileEl };
+
+    const move = (ev) => {
+      dragState.moved = true;
+      ghost.style.left = ev.clientX + 'px';
+      ghost.style.top = ev.clientY + 'px';
+      clearDragOver();
+      const target = document.elementFromPoint(ev.clientX, ev.clientY);
+      const slotEl = target && target.closest('.slot');
+      const bankTarget = target && target.closest('#bank');
+      if(slotEl) slotEl.classList.add('drag-over');
+      else if(bankTarget) bankTarget.classList.add('drag-over');
+    };
+    const up = (ev) => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      ghost.remove();
+      tileEl.classList.remove('dragging');
+      clearDragOver();
+
+      const target = document.elementFromPoint(ev.clientX, ev.clientY);
+      const slotEl = target && target.closest('.slot');
+      const bankTarget = target && target.closest('#bank');
+
+      if(slotEl){
+        const targetIdx = parseInt(slotEl.dataset.slotIndex, 10);
+        dropOnSlot(id, sourceType, sourceIndex, targetIdx);
+      } else if(bankTarget){
+        dropOnBank(id, sourceType, sourceIndex);
+      }
+      sfx.drop();
+      setTimeout(()=>{ dragState = null; }, 0);
+      maybeAutoCheck();
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up, { once:true });
+  }
+
+  function clearDragOver(){
+    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  }
+
+  function dropOnSlot(id, sourceType, sourceIndex, targetIdx){
+    const word = tileWord[id];
+    const occupied = slots[targetIdx];
+
+    if(sourceType === 'bank'){
+      bankOrder = bankOrder.filter(x => x !== id);
+      if(occupied) bankOrder.push(occupied.id);
+      slots[targetIdx] = { id, word };
+    } else {
+      // moving from one slot to another (or same)
+      if(sourceIndex === targetIdx){ renderSlots(); return; }
+      slots[sourceIndex] = null;
+      if(occupied){
+        slots[sourceIndex] = occupied;
+      }
+      slots[targetIdx] = { id, word };
+    }
+    renderSlots();
+    renderBank();
+  }
+
+  function dropOnBank(id, sourceType, sourceIndex){
+    if(sourceType === 'slot'){
+      slots[sourceIndex] = null;
+      bankOrder.push(id);
+      renderSlots();
+      renderBank();
+    }
+    // if dragged from bank back to bank, no-op (order doesn't matter)
+  }
+
+  /* ---------- Timer ---------- */
+  function startTimer(){
+    stopTimer();
+    updateTimerDisplay();
+    timerHandle = setInterval(() => {
+      timeLeft--;
+      updateTimerDisplay();
+      if(timeLeft <= 5 && timeLeft > 0) sfx.tick();
+      if(timeLeft <= 0){
+        stopTimer();
+        handleTimeUp();
+      }
+    }, 1000);
+  }
+  function stopTimer(){
+    if(timerHandle){ clearInterval(timerHandle); timerHandle = null; }
+  }
+  function updateTimerDisplay(){
+    timerEl.textContent = fmtTime(Math.max(timeLeft,0));
+    timerEl.classList.remove('warn','danger');
+    if(timeLeft <= 5) timerEl.classList.add('danger');
+    else if(timeLeft <= 15) timerEl.classList.add('warn');
+  }
+
+  /* ---------- Check / Hint / Feedback ---------- */
+  function maybeAutoCheck(){
+    if(locked) return;
+    if(slots.every(s => s !== null)){
+      setTimeout(checkAnswer, 250);
+    }
+  }
+
+  function setFeedback(text, cls){
+    feedbackEl.textContent = text;
+    feedbackEl.className = 'feedback' + (text ? ' show' : '') + (cls ? ' ' + cls : '');
+  }
+
+  function checkAnswer(){
+    if(locked) return;
+    if(!slots.every(s => s !== null)){
+      setFeedback("Fill every slot first — you're almost there!", 'info');
+      return;
+    }
+    const current = slots.map(s => s.word);
+    const isCorrect = current.every((w, i) => w === words[i]);
+
+    if(isCorrect){
+      finishRound(true);
+    } else {
+      wrongAttempts++;
+      sfx.wrong();
+      lineEl.classList.remove('shake'); void lineEl.offsetWidth; lineEl.classList.add('shake');
+      slots.forEach((s, i) => {
+        const slotEl = lineEl.children[i];
+        if(s.word !== words[i]){
+          slotEl.classList.remove('wrong-flash'); void slotEl.offsetWidth; slotEl.classList.add('wrong-flash');
+        }
+      });
+      setFeedback('Not quite — rearrange and try again!', 'bad');
+    }
+  }
+
+  function useHint(){
+    if(locked || hintsUsed >= 1) return;
+    hintsUsed++;
+    sfx.hint();
+    // find the first slot index that's empty or wrong, place the correct word there
+    let targetIdx = -1;
+    for(let i=0;i<words.length;i++){
+      if(!slots[i] || slots[i].word !== words[i]){ targetIdx = i; break; }
+    }
+    if(targetIdx === -1){ hintBtn.disabled = true; return; }
+
+    const correctWord = words[targetIdx];
+    // find that word's tile: either in bank, or misplaced in another slot
+    let foundId = null;
+    for(const id of bankOrder){
+      if(tileWord[id] === correctWord){ foundId = id; break; }
+    }
+    if(foundId){
+      bankOrder = bankOrder.filter(x => x !== foundId);
+      if(slots[targetIdx]) bankOrder.push(slots[targetIdx].id);
+      slots[targetIdx] = { id: foundId, word: correctWord };
+    } else {
+      // it's misplaced in another slot — swap
+      const otherIdx = slots.findIndex(s => s && s.word === correctWord);
+      if(otherIdx > -1){
+        const temp = slots[targetIdx];
+        slots[targetIdx] = slots[otherIdx];
+        slots[otherIdx] = temp;
+      }
+    }
+    renderSlots();
+    renderBank();
+    setFeedback('Hint used: one word is now in place.', 'info');
+    hintBtn.disabled = true;
+    maybeAutoCheck();
+  }
+
+  function handleTimeUp(){
+    locked = true;
+    checkBtn.disabled = true;
+    hintBtn.disabled = true;
+    setFeedback("Time's up! Here's the sentence — take a look.", 'info');
+    revealAnswer();
+    sfx.wrong();
+    recordRoundScore(0);
+    setTimeout(nextRound, 2200);
+  }
+
+  function revealAnswer(){
+    slots = words.map((w) => {
+      let foundId = null;
+      for(const id of bankOrder){ if(tileWord[id] === w){ foundId = id; break; } }
+      if(!foundId){
+        for(let i=0;i<slots.length;i++){
+          if(slots[i] && slots[i].word === w){ foundId = slots[i].id; break; }
+        }
+      }
+      return { id: foundId, word: w };
+    });
+    bankOrder = [];
+    renderSlots();
+    renderBank();
+    highlightVerb();
+  }
+
+  function highlightVerb(){
+    if(verbIndex < 0) return;
+    const slotEl = lineEl.children[verbIndex];
+    if(slotEl){
+      slotEl.classList.add('verb-highlight');
+      const tileEl = slotEl.querySelector('.tile');
+      if(tileEl) tileEl.classList.add('correct-pop');
+    }
+  }
+
+  function recordRoundScore(pts){
+    score += pts;
+    scoreValEl.textContent = score;
+  }
+
+  function finishRound(success){
+    locked = true;
+    stopTimer();
+    checkBtn.disabled = true;
+    hintBtn.disabled = true;
+    sfx.correct();
+    highlightVerb();
+
+    const timeBonus = Math.round((timeLeft / TIME_PER_SENTENCE) * 30);
+    const penalty = (wrongAttempts * 10) + (hintsUsed * 20);
+    const pts = Math.max(10, 100 + timeBonus - penalty);
+    recordRoundScore(pts);
+
+    setFeedback('Great job! "' + words[verbIndex] + '" is the simple past tense verb. +' + pts + ' pts', 'good');
+    setTimeout(nextRound, 2000);
+  }
+
+  function nextRound(){
+    roundIndex++;
+    if(roundIndex >= SENTENCES.length){
+      showReport();
+    } else {
+      startRound();
+    }
+  }
+
+  /* ---------- Report / Game over ---------- */
+  function showReport(){
+    stopTimer();
+    sfx.complete();
+    const maxScore = SENTENCES.length * 100;
+    const pct = score / maxScore;
+    let stars = 1;
+    if(pct >= 0.9) stars = 3;
+    else if(pct >= 0.65) stars = 2;
+
+    $('reportTitle').textContent = stars === 3 ? "Excellent work!" : (stars === 2 ? "Nice job!" : "Good effort!");
+    $('reportStars').textContent = '★★★'.slice(0, stars) + '☆☆☆'.slice(0, 3-stars);
+    $('reportStats').innerHTML =
+      '<span>Sentences completed<b>' + SENTENCES.length + ' / ' + SENTENCES.length + '</b></span>' +
+      '<span>Total score<b>' + score + ' / ' + maxScore + '</b></span>';
+    overlay.classList.add('show');
+  }
+
+  function restartGame(){
+    overlay.classList.remove('show');
+    score = 0;
+    scoreValEl.textContent = 0;
+    roundIndex = 0;
+    order = shuffle(SENTENCES.map((_, i) => i));
+    buildDots();
+    startRound();
+  }
+
+  /* ---------- Wire up controls ---------- */
+  checkBtn.addEventListener('click', checkAnswer);
+  hintBtn.addEventListener('click', useHint);
+  resetBtn.addEventListener('click', () => { if(!locked) startRound(); });
+  playAgainBtn.addEventListener('click', restartGame);
+  muteBtn.addEventListener('click', () => {
+    muted = !muted;
+    muteBtn.textContent = muted ? '🔇' : '🔊';
+    if(!muted) getCtx();
+  });
+
+  /* ---------- Init ---------- */
+  order = shuffle(SENTENCES.map((_, i) => i));
+  buildDots();
+  startRound();
+
+})();
+</script>
+</body>
+</html>

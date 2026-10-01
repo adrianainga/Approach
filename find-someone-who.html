@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Find Someone Who: Getting to Know You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0C2340;
+    --gold: #AE9142;
+    --teal: #2A8783;
+    --coral: #E35D5B;
+    --amber: #E8A23A;
+    --purple: #7B6CD0;
+    --green: #3BA889;
+    --blue: #4A9AD4;
+
+    --bg: #FFFFFF;
+    --surface: #FFFFFF;
+    --mix: #FFFFFF;
+    --ink: #1B2A44;
+    --ink-soft: #5E6B7D;
+    --line: #E1E5EB;
+    --field: #FFFFFF;
+    --tint: 13%;
+
+    --sans: "Montserrat", "Segoe UI", Helvetica, Arial, sans-serif;
+    --serif: Georgia, "Times New Roman", serif;
+
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0B1626; --surface: #13233A; --mix: #13233A;
+      --ink: #EEF2F7; --ink-soft: #A9B8CA; --line: #27405F; --field: #0E1C30; --tint: 22%;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0B1626; --surface: #13233A; --mix: #13233A;
+    --ink: #EEF2F7; --ink-soft: #A9B8CA; --line: #27405F; --field: #0E1C30; --tint: 22%;
+  }
+  html { scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 90px); }
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.55; }
+
+  .c-teal { --c: var(--teal); } .c-coral { --c: var(--coral); } .c-amber { --c: var(--amber); }
+  .c-purple { --c: var(--purple); } .c-green { --c: var(--green); } .c-blue { --c: var(--blue); }
+  .tinted { background: color-mix(in srgb, var(--c) var(--tint), var(--mix)); }
+
+  /* Rainbow stripe, as in the worksheet template */
+  .stripe { display: grid; grid-template-columns: repeat(6, 1fr); height: 6px; }
+  .stripe span:nth-child(1) { background: var(--teal); } .stripe span:nth-child(2) { background: var(--coral); }
+  .stripe span:nth-child(3) { background: var(--amber); } .stripe span:nth-child(4) { background: var(--purple); }
+  .stripe span:nth-child(5) { background: var(--green); } .stripe span:nth-child(6) { background: var(--blue); }
+
+  /* Header */
+  .masthead-inner {
+    max-width: 1120px; margin: 0 auto; padding: 2.5rem 1.25rem 1.5rem;
+    display: grid; grid-template-columns: 1fr auto; gap: 1.5rem; align-items: end;
+    border-bottom: 1px solid var(--line);
+  }
+  .level { display: block; font-weight: 700; font-size: .85rem; color: var(--amber); margin-bottom: .4rem; }
+  h1 { font-family: var(--serif); font-weight: 700; font-size: clamp(2.1rem, 5.5vw, 3.4rem); line-height: 1.05; margin: 0 0 .6rem; color: var(--ink); }
+  .lede { max-width: 62ch; margin: 0; color: var(--ink-soft); }
+  .confetti { display: flex; gap: .4rem; margin-top: 1rem; }
+  .confetti i { width: 12px; height: 12px; border-radius: 50%; background: var(--c); display: block; }
+  .confetti i:nth-child(even) { border-radius: 3px; transform: rotate(20deg); }
+  .player { display: flex; flex-direction: column; gap: .35rem; min-width: 250px; }
+  .player label { font-size: .85rem; font-weight: 600; color: var(--ink-soft); }
+  .player input {
+    font: inherit; font-weight: 600; padding: .6rem .85rem; border-radius: 10px;
+    border: 2px dashed var(--line); background: var(--field); color: var(--ink);
+  }
+
+  /* Score bar */
+  .scorebar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  .scorebar-inner { max-width: 1120px; margin: 0 auto; padding: .65rem 1.25rem; display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1.5rem; }
+  .points { display: flex; align-items: center; gap: .55rem; }
+  .points .coin {
+    width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--amber); color: #fff; font-weight: 800; font-size: 1rem; box-shadow: inset 0 -3px 0 rgba(0,0,0,.15);
+  }
+  .points strong { font-family: var(--serif); font-size: 1.9rem; line-height: 1; min-width: 2.5ch; display: inline-block; }
+  .points span { font-size: .9rem; color: var(--ink-soft); font-weight: 500; }
+  .bump { animation: bump .45s ease; }
+  @keyframes bump { 40% { transform: scale(1.25); } }
+  .progress { flex: 1 1 220px; display: flex; align-items: center; gap: .75rem; }
+  .track { flex: 1; height: 12px; background: var(--field); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .fill { height: 100%; width: 0; transition: width .4s ease;
+    background: linear-gradient(90deg, var(--teal), var(--coral), var(--amber), var(--purple), var(--green), var(--blue)); background-size: 1060px 100%; }
+  .progress-label { font-size: .9rem; font-weight: 600; white-space: nowrap; }
+  .timer { display: flex; align-items: center; gap: .5rem; }
+  .timer-display { font-variant-numeric: tabular-nums; font-weight: 700; font-size: .95rem; background: var(--field); border: 1px solid var(--line); border-radius: 999px; padding: .25rem .8rem; }
+  .timer-display.low { color: #fff; background: var(--coral); border-color: var(--coral); }
+
+  .btn { font: inherit; font-size: .88rem; font-weight: 600; border-radius: 999px; padding: .5rem 1.05rem; cursor: pointer; border: 2px solid var(--navy); background: var(--navy); color: #fff; }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .card .btn:not(.ghost) { background: var(--c); border-color: var(--c); }
+  .btn:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn:not(.ghost) { background: #3A6EA5; border-color: #3A6EA5; } }
+  :root[data-theme="dark"] .btn:not(.ghost) { background: #3A6EA5; border-color: #3A6EA5; }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 2rem 1.25rem 3rem; }
+
+  /* Section headings with numbered circles, as in the template */
+  .sec-head { display: flex; align-items: flex-start; gap: .85rem; margin: 0 0 1rem; }
+  .sec-head .dot { flex: none; width: 38px; height: 38px; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; font-weight: 700; }
+  .sec-head h2 { font-family: var(--serif); font-size: 1.45rem; margin: 0; line-height: 1.2; }
+  .sec-head p { margin: .1rem 0 0; color: var(--ink-soft); font-size: .88rem; }
+  .sec-head .pill { margin-left: auto; font-size: .78rem; font-weight: 600; color: var(--ink-soft); background: var(--field); border: 1px solid var(--line); border-radius: 999px; padding: .2rem .7rem; white-space: nowrap; }
+
+  .box { position: relative; overflow: hidden; border-radius: 16px; padding: 1.3rem 1.4rem; }
+  .box::after { content: ""; position: absolute; top: -22px; right: -22px; width: 70px; height: 70px; border-radius: 50%; background: var(--c); opacity: .18; }
+
+  .rules { display: grid; grid-template-columns: 1.25fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+  .rules ol { margin: 0; padding-left: 1.2rem; }
+  .rules li { margin-bottom: .4rem; }
+  .points-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
+  .points-list li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; background: var(--field); border-radius: 10px; padding: .45rem .75rem; font-size: .92rem; }
+  .points-list b { color: #fff; background: var(--c); border-radius: 999px; padding: .1rem .6rem; font-size: .82rem; white-space: nowrap; }
+
+  .helpers { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-bottom: 2.5rem; }
+  .callout { border-left: 4px solid var(--c); border-radius: 10px; padding: .75rem 1rem; font-size: .92rem; }
+  .callout strong { color: color-mix(in srgb, var(--c) 75%, var(--ink)); }
+  .phrases { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
+  .phrases span { background: var(--field); border: 1px dashed color-mix(in srgb, var(--c) 50%, var(--line)); border-radius: 999px; padding: .15rem .65rem; font-style: italic; font-size: .85rem; }
+
+  /* Cards */
+  .deck { max-width: 680px; margin: 0 auto; }
+  .navdots { display: flex; flex-wrap: wrap; justify-content: center; gap: .45rem; margin-bottom: .9rem; }
+  .navdot {
+    width: 34px; height: 34px; border-radius: 50%; font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer;
+    border: 2px solid color-mix(in srgb, var(--c) 55%, var(--line)); background: var(--field); color: var(--ink-soft);
+    display: grid; place-items: center; padding: 0; transition: transform .15s;
+  }
+  .navdot.passed { border-style: dashed; border-color: var(--c); color: var(--ink); }
+  .navdot.done { background: var(--c); border-color: var(--c); color: #fff; }
+  .navdot.current { transform: scale(1.18); box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--c); }
+  .legend { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem 1.2rem; font-size: .8rem; color: var(--ink-soft); margin-bottom: 1.1rem; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; vertical-align: -1px; margin-right: .35rem; border: 2px solid var(--coral); }
+  .legend .l-done { background: var(--coral); } .legend .l-passed { border-style: dashed; }
+  .deck .card { padding: 1.5rem 1.6rem 1.35rem; gap: .85rem; animation: cardIn .35s ease; }
+  @keyframes cardIn { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+  .card[hidden] { display: none; }
+  .deck .prompt { font-size: clamp(1.35rem, 3.5vw, 1.7rem); }
+  .deck .emoji { font-size: 2.2rem; }
+  .card-count { font-size: .85rem; font-weight: 600; color: var(--ink-soft); }
+  .deck-nav { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: .6rem; margin-top: 1rem; }
+  .deck-nav .btn:first-child { justify-self: start; }
+  .deck-nav .btn:last-child { justify-self: end; }
+  .deck-nav .btn:disabled { opacity: .4; cursor: default; }
+  .btn.pass { background: transparent; color: var(--ink); border: 2px dashed var(--amber); }
+  .passed-note { text-align: center; font-size: .88rem; color: var(--ink-soft); margin-top: .9rem; min-height: 1.4em; }
+  .linkbtn { font: inherit; font-weight: 700; color: var(--ink); background: none; border: 0; border-bottom: 2px solid var(--amber); padding: 0; cursor: pointer; }
+  .card { position: relative; overflow: hidden; border-radius: 16px; padding: 1.15rem 1.2rem 1.1rem; display: flex; flex-direction: column; gap: .7rem; border: 2px solid transparent; transition: border-color .3s; }
+  .card::after { content: ""; position: absolute; top: -24px; right: -24px; width: 76px; height: 76px; border-radius: 50%; background: var(--c); opacity: .18; }
+  .card.done { border-color: var(--c); }
+  .card-top { display: flex; align-items: center; gap: .6rem; }
+  .card-num { width: 32px; height: 32px; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: .9rem; flex: none; }
+  .emoji { font-size: 1.6rem; line-height: 1; }
+  .prompt { font-family: var(--serif); font-weight: 700; font-size: 1.15rem; line-height: 1.3; margin: 0; padding-right: 3.5rem; }
+  .ask { font-size: .88rem; color: var(--ink-soft); background: var(--field); border: 1px dashed color-mix(in srgb, var(--c) 45%, var(--line)); border-radius: 10px; padding: .55rem .75rem; }
+  .ask b { color: var(--ink); font-weight: 600; }
+  .ask p { margin: 0; } .ask p + p { margin-top: .2rem; }
+  .field label { display: block; font-size: .82rem; font-weight: 600; margin-bottom: .25rem; }
+  .field input, .field textarea { width: 100%; font: inherit; font-size: .95rem; color: var(--ink); background: var(--field); border: 1.5px solid var(--line); border-radius: 10px; padding: .55rem .7rem; }
+  .field textarea { resize: vertical; min-height: 4.2rem; }
+  .field input:disabled, .field textarea:disabled { opacity: .9; cursor: default; }
+  .hint { font-size: .78rem; color: var(--ink-soft); margin-top: .2rem; }
+  .hint.ok { color: #2E7D4F; font-weight: 600; }
+  .warn { font-size: .8rem; color: #C8102E; font-weight: 600; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hint.ok { color: #7FD3A2; } :root:not([data-theme="light"]) .warn { color: #FF8A9A; } }
+  :root[data-theme="dark"] .hint.ok { color: #7FD3A2; } :root[data-theme="dark"] .warn { color: #FF8A9A; }
+  .card-actions { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-top: auto; }
+  .card-score { font-size: .85rem; font-weight: 700; color: var(--ink-soft); }
+  .card.done .card-score { color: color-mix(in srgb, var(--c) 75%, var(--ink)); }
+
+  .stamp {
+    position: absolute; z-index: 1; top: .7rem; right: .7rem; width: 68px; height: 68px; border-radius: 50%;
+    border: 3px double var(--c); background: color-mix(in srgb, var(--c) 10%, var(--mix));
+    color: color-mix(in srgb, var(--c) 80%, var(--ink));
+    display: grid; place-items: center; text-align: center; font-size: .58rem; font-weight: 800; letter-spacing: .04em; line-height: 1.1;
+    transform: rotate(-14deg) scale(0); opacity: 0; pointer-events: none;
+  }
+  .stamp .stamp-pts { display: block; font-family: var(--serif); font-size: 1.15rem; font-weight: 700; letter-spacing: 0; }
+  .card.done .stamp { opacity: 1; transform: rotate(-14deg) scale(1); }
+  .card.just-done .stamp { animation: stampIn .5s cubic-bezier(.2,1.6,.4,1); }
+  @keyframes stampIn { 0% { transform: rotate(-30deg) scale(2.2); opacity: 0; } 100% { transform: rotate(-14deg) scale(1); opacity: 1; } }
+
+  /* Results */
+  .results { margin-top: 2.75rem; }
+  .results-sub { color: var(--ink-soft); margin: 0 0 1rem; }
+  .table-wrap { overflow-x: auto; position: relative; z-index: 1; }
+  .results table { width: 100%; border-collapse: collapse; font-size: .9rem; min-width: 560px; background: var(--field); border-radius: 10px; overflow: hidden; }
+  .results th { text-align: left; background: var(--navy); color: #fff; font-weight: 600; padding: .6rem .75rem; }
+  .results td { padding: .55rem .75rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .results td .mini { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--c); margin-right: .4rem; }
+  .results-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 1rem; position: relative; z-index: 1; }
+  .medal { font-weight: 700; }
+
+  .teacher-btn { align-self: flex-start; margin-top: .4rem; }
+  .teacher-btn[hidden] { display: none; }
+  dialog.panel {
+    border: 0; border-radius: 18px; padding: 0; width: min(560px, calc(100% - 2rem)); max-height: calc(100% - 2rem);
+    background: var(--surface); color: var(--ink); box-shadow: 0 20px 60px rgba(12,35,64,.35);
+  }
+  dialog.panel::backdrop { background: rgba(12,35,64,.55); }
+  .panel-head { position: relative; overflow: hidden; padding: 1.3rem 1.5rem 1rem; border-bottom: 1px solid var(--line); }
+  .panel-head h2 { font-family: var(--serif); margin: 0; font-size: 1.5rem; }
+  .panel-head p { margin: .2rem 0 0; font-size: .85rem; color: var(--ink-soft); }
+  .panel-body { padding: 1.2rem 1.5rem; display: flex; flex-direction: column; gap: 1.2rem; }
+  .setting > .label { display: block; font-weight: 700; font-size: .92rem; margin-bottom: .45rem; }
+  .setting .sub { font-size: .8rem; color: var(--ink-soft); margin: .4rem 0 0; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+  .seg label { position: relative; cursor: pointer; }
+  .seg input { position: absolute; opacity: 0; }
+  .seg span { display: block; border: 2px solid var(--line); border-radius: 12px; padding: .6rem .8rem; font-size: .85rem; color: var(--ink-soft); }
+  .seg span b { display: block; font-size: .95rem; color: var(--ink); }
+  .seg input:checked + span { border-color: var(--c); background: color-mix(in srgb, var(--c) var(--tint), var(--mix)); }
+  .seg input:focus-visible + span { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .stepper { display: flex; align-items: center; gap: .6rem; }
+  .stepper button { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--c); background: var(--field); color: var(--ink); font: inherit; font-size: 1.2rem; font-weight: 700; cursor: pointer; line-height: 1; }
+  .stepper button:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .stepper output { min-width: 3ch; text-align: center; font-family: var(--serif); font-size: 1.6rem; font-weight: 700; }
+  .stepper .unit { font-size: .88rem; color: var(--ink-soft); }
+  .panel-foot { padding: 1rem 1.5rem 1.3rem; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .6rem; align-items: center; }
+  .panel-foot .sync { margin-right: auto; font-size: .8rem; color: var(--ink-soft); max-width: 30ch; }
+  .hide-comments .comment-only { display: none !important; }
+
+  footer { max-width: 1120px; margin: 0 auto; padding: 0 1.25rem 2rem; }
+  footer div { border-top: 1px solid var(--line); padding-top: .75rem; font-size: .75rem; color: var(--ink-soft); display: flex; justify-content: space-between; }
+
+  .toast { position: fixed; left: 50%; bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 150%);
+    background: var(--navy); color: #fff; padding: .75rem 1.2rem; border-radius: 999px; font-weight: 600; font-size: .95rem;
+    transition: transform .3s ease; z-index: 20; max-width: calc(100% - 2rem); text-align: center; box-shadow: 0 0 0 3px var(--amber); }
+  .toast.show { transform: translate(-50%, 0); }
+
+  @media (max-width: 760px) {
+    .masthead-inner { grid-template-columns: 1fr; }
+    .rules, .helpers { grid-template-columns: 1fr; }
+    .deck-nav { grid-template-columns: 1fr 1fr; } .deck-nav .pass { grid-column: 1 / -1; grid-row: 2; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  @media print {
+    .scorebar, .rules, .helpers, #play, .results-actions, .toast, .player, .confetti { display: none !important; }
+    .box::after { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="stripe" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div>
+      <span class="level" id="levelLabel">Intermediate · B1 / B1+</span>
+      <h1>Find someone who…</h1>
+      <p class="lede" id="lede">Walk around the room, introduce yourself, and ask questions. When a classmate says “yes,” write their name and one thing you learned. Collect stamps and points!</p>
+      <div class="confetti" aria-hidden="true"><i class="c-teal"></i><i class="c-coral"></i><i class="c-amber"></i><i class="c-purple"></i><i class="c-green"></i><i class="c-blue"></i></div>
+    </div>
+    <div class="player">
+      <label for="playerName">Your name</label>
+      <input id="playerName" type="text" placeholder="Type your first name" autocomplete="off">
+      <button class="btn ghost teacher-btn" type="button" id="teacherBtn" hidden>⚙️ Teacher settings</button>
+    </div>
+  </div>
+</header>
+
+<div class="scorebar" role="region" aria-label="Score">
+  <div class="scorebar-inner">
+    <div class="points" aria-live="polite"><span class="coin" aria-hidden="true">★</span><strong id="totalPoints">0</strong><span>points</span></div>
+    <div class="progress">
+      <div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div>
+      <span class="progress-label" id="progressLabel">0 of 15 stamps</span>
+    </div>
+    <div class="timer">
+      <span class="timer-display" id="timerDisplay" aria-live="off">15:00</span>
+      <button class="btn ghost" id="timerBtn" type="button">Start timer</button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="sec-head c-teal">
+    <span class="dot">1</span>
+    <div><h2>Get ready</h2><p>Read the rules and the useful phrases before you start.</p></div>
+    <span class="pill">5 min</span>
+  </div>
+
+  <section class="rules" aria-label="How to play">
+    <div class="box tinted c-amber">
+      <div class="sec-head" style="margin-bottom:.6rem"><div><h2 style="font-size:1.2rem">How to play</h2></div></div>
+      <ol id="rulesList"></ol>
+    </div>
+    <div class="box tinted c-purple">
+      <div class="sec-head" style="margin-bottom:.6rem"><div><h2 style="font-size:1.2rem">Points</h2></div></div>
+      <ul class="points-list" id="pointsList"></ul>
+    </div>
+  </section>
+
+  <section class="helpers" aria-label="Useful phrases">
+    <div class="callout tinted c-green">
+      <strong>Extra support:</strong> Use these phrases to react and keep talking.
+      <div class="phrases" id="supportPhrases"></div>
+    </div>
+    <div class="callout tinted c-amber">
+      <div id="challengeBox"></div>
+    </div>
+  </section>
+
+  <div class="sec-head c-coral" id="play">
+    <span class="dot">2</span>
+    <div><h2>Mingle and find</h2><p>One card at a time. Pass if you can’t find someone yet, and come back later.</p></div>
+    <span class="pill" id="minsPill">15 min</span>
+  </div>
+  <section class="deck" aria-label="Prompts">
+    <nav class="navdots" id="navdots" aria-label="Jump to a card"></nav>
+    <div class="legend" aria-hidden="true"><span><i></i>Not started</span><span><i class="l-passed"></i>Passed</span><span><i class="l-done"></i>Stamped</span></div>
+    <div id="grid"></div>
+    <div class="deck-nav">
+      <button class="btn ghost" type="button" id="prevBtn">← Previous</button>
+      <button class="btn pass" type="button" id="passBtn">Pass for now</button>
+      <button class="btn ghost" type="button" id="nextBtn">Next →</button>
+    </div>
+    <p class="passed-note" id="passedNote" aria-live="polite"></p>
+  </section>
+
+  <section class="results" id="results" aria-label="My results">
+    <div class="sec-head c-blue">
+      <span class="dot">3</span>
+      <div><h2 id="resultsTitle">My results</h2><p>Share this table with your teacher at the end.</p></div>
+    </div>
+    <div class="box tinted c-blue">
+      <p class="results-sub" id="resultsSub">Your stamps will appear here.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Prompt</th><th>Classmate</th><th class="comment-only">What I learned</th><th>Points</th></tr></thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+      <div class="results-actions">
+        <button class="btn" type="button" id="printBtn">Print or save as PDF</button>
+        <button class="btn ghost" type="button" id="resetBtn">Start over</button>
+      </div>
+    </div>
+  </section>
+</main>
+<footer><div><span>Find someone who… · Introductions and basic information</span><span>Approach International Student Center</span></div></footer>
+
+<dialog class="panel" id="panel" aria-labelledby="panelTitle">
+  <div class="panel-head c-purple box" style="border-radius:0">
+    <h2 id="panelTitle">Teacher settings</h2>
+    <p>Set up the activity for your class.</p>
+  </div>
+  <div class="panel-body">
+    <div class="setting">
+      <span class="label">Level</span>
+      <div class="seg" role="radiogroup" aria-label="Level">
+        <label class="c-green"><input type="radio" name="level" value="beginner"><span><b>Beginner</b>A1 / A2 · easier questions, names only</span></label>
+        <label class="c-coral"><input type="radio" name="level" value="intermediate"><span><b>Intermediate</b>B1 / B1+ · names and comments</span></label>
+      </div>
+    </div>
+    <div class="setting c-amber">
+      <span class="label" id="lblCount">Number of questions</span>
+      <div class="stepper" role="group" aria-labelledby="lblCount">
+        <button type="button" data-step="count" data-d="-1" aria-label="Fewer questions">−</button>
+        <output id="outCount">15</output>
+        <button type="button" data-step="count" data-d="1" aria-label="More questions">+</button>
+        <span class="unit" id="countRange">of 15</span>
+      </div>
+    </div>
+    <div class="setting c-blue">
+      <span class="label" id="lblMinutes">Timer</span>
+      <div class="stepper" role="group" aria-labelledby="lblMinutes">
+        <button type="button" data-step="minutes" data-d="-1" aria-label="Less time">−</button>
+        <output id="outMinutes">15</output>
+        <button type="button" data-step="minutes" data-d="1" aria-label="More time">+</button>
+        <span class="unit">minutes</span>
+      </div>
+    </div>
+    <div class="setting c-teal">
+      <span class="label" id="lblClass">Class size</span>
+      <div class="stepper" role="group" aria-labelledby="lblClass">
+        <button type="button" data-step="classSize" data-d="-1" aria-label="Fewer students">−</button>
+        <output id="outClass">12</output>
+        <button type="button" data-step="classSize" data-d="1" aria-label="More students">+</button>
+        <span class="unit">students</span>
+      </div>
+      <p class="sub" id="classNote"></p>
+    </div>
+  </div>
+  <div class="panel-foot">
+    <span class="sync" id="syncNote"></span>
+    <button class="btn ghost" type="button" id="panelCancel">Cancel</button>
+    <button class="btn" type="button" id="panelSave">Save settings</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ---------------- Question banks ---------------- */
+const BANKS = {
+  intermediate: [
+    { i: "🌍", p: "has lived in more than two countries.", q: "Have you lived in more than two countries?", f: "Which country did you like the most, and why?" },
+    { i: "👋", p: "can say “hello” in four or more languages.", q: "How many languages can you say “hello” in?", f: "Can you teach me one?" },
+    { i: "✨", p: "has a name with a special meaning.", q: "Does your name have a special meaning?", f: "Who chose your name?" },
+    { i: "🍜", p: "has tried a local food here and now loves it.", q: "Have you tried a local food here that you really love?", f: "Where did you try it for the first time?" },
+    { i: "🍫", p: "really misses a snack from home.", q: "Is there a snack from home that you really miss?", f: "What does it taste like?" },
+    { i: "👨‍👩‍👧", p: "has the same number of brothers and sisters as you.", q: "How many brothers and sisters do you have?", f: "Are you the oldest, the youngest, or in the middle?" },
+    { i: "🗺️", p: "got lost in this city during their first week.", q: "Did you get lost here during your first week?", f: "What happened? How did you find your way?" },
+    { i: "🎸", p: "can play a musical instrument.", q: "Can you play a musical instrument?", f: "How long have you been playing it?" },
+    { i: "🎂", p: "was born in the same month as you.", q: "When is your birthday?", f: "How do people celebrate birthdays in your country?" },
+    { i: "🐶", p: "has a pet back home.", q: "Do you have a pet back home?", f: "What’s its name? Who takes care of it now?" },
+    { i: "✈️", p: "took more than one flight to get here.", q: "Did you take more than one flight to get here?", f: "What was the longest part of the trip?" },
+    { i: "🍲", p: "can cook a traditional dish from their country.", q: "Can you cook a traditional dish from your country?", f: "What ingredients do you need for it?" },
+    { i: "🎩", p: "has a hidden talent.", q: "Do you have a hidden talent?", f: "When did you discover it?" },
+    { i: "🧳", p: "wants to visit a country no one else in the group has visited.", q: "Which country do you really want to visit someday?", f: "What do you want to do there?" },
+    { i: "🏙️", p: "knows a fun fact about their hometown.", q: "Do you know a fun fact about your hometown?", f: "Would you recommend visiting it? Why?" }
+  ],
+  beginner: [
+    { i: "☕", p: "likes coffee.", q: "Do you like coffee?", f: "Do you like tea?" },
+    { i: "👨‍👩‍👧", p: "has a brother or a sister.", q: "Do you have a brother or a sister?", f: "What is his or her name?" },
+    { i: "🐱", p: "has a pet.", q: "Do you have a pet?", f: "Is it a cat or a dog?" },
+    { i: "🍕", p: "likes pizza.", q: "Do you like pizza?", f: "What is your favorite food?" },
+    { i: "⚽", p: "likes soccer.", q: "Do you like soccer?", f: "What is your favorite sport?" },
+    { i: "🗣️", p: "can speak three languages.", q: "Can you speak three languages?", f: "What languages can you speak?" },
+    { i: "🏊", p: "can swim.", q: "Can you swim?", f: "Do you like the beach?" },
+    { i: "🍳", p: "likes to cook.", q: "Do you like to cook?", f: "What can you cook?" },
+    { i: "☀️", p: "has a birthday in the summer.", q: "Is your birthday in the summer?", f: "When is your birthday?" },
+    { i: "🏠", p: "lives near the school.", q: "Do you live near the school?", f: "How do you come to school?" }
+  ]
+};
+const LEVELS = {
+  intermediate: {
+    label: "Intermediate · B1 / B1+",
+    lede: "Walk around the room, introduce yourself, and ask questions. When a classmate says “yes,” write their name and one thing you learned. Collect stamps and points!",
+    support: ["Really? Me too!", "That’s interesting.", "Tell me more.", "How about you?", "Could you repeat that?"],
+    challenge: `<strong>Challenge:</strong> Ask one more question of your own, and write a comment that uses <i>because</i> or <i>but</i>.
+      <div class="phrases"><span>Why…?</span><span>How long…?</span><span>What was your favorite…?</span></div>`
+  },
+  beginner: {
+    label: "Beginner · A1 / A2",
+    lede: "Walk around the room and say hello. Ask the question on the card. When a classmate says “yes,” write their name. Collect stamps and points!",
+    support: ["Hello! I’m …", "Nice to meet you.", "Yes, I do. / No, I don’t.", "Me too!", "Can you say that again, please?"],
+    challenge: `<strong>Challenge:</strong> Ask the follow-up question too, and say one more thing about you.
+      <div class="phrases"><span>I like…</span><span>I have…</span><span>I can…</span></div>`
+  }
+};
+const LIMITS = { count: { min: 5 }, minutes: { min: 1, max: 60 }, classSize: { min: 2, max: 40 } };
+const DEFAULTS = { level: "intermediate", count: 15, minutes: 15, classSize: 12 };
+const COLORS = ["teal", "coral", "amber", "purple", "green", "blue"];
+const colorOf = i => COLORS[i % COLORS.length];
+
+/* ---------------- Settings ---------------- */
+let settings = { ...DEFAULTS };
+let PROMPTS = [];
+const SETTINGS_KEY = "fsw-settings-v1";
+
+function normalize(raw) {
+  const out = { ...DEFAULTS, ...(raw || {}) };
+  if (!BANKS[out.level]) out.level = DEFAULTS.level;
+  const max = BANKS[out.level].length;
+  const clamp = (v, lo, hi, d) => { v = parseInt(v, 10); return isNaN(v) ? d : Math.max(lo, Math.min(hi, v)); };
+  out.count = clamp(out.count, LIMITS.count.min, max, max);
+  out.minutes = clamp(out.minutes, LIMITS.minutes.min, LIMITS.minutes.max, DEFAULTS.minutes);
+  out.classSize = clamp(out.classSize, LIMITS.classSize.min, LIMITS.classSize.max, DEFAULTS.classSize);
+  return { level: out.level, count: out.count, minutes: out.minutes, classSize: out.classSize };
+}
+const isBeginner = () => settings.level === "beginner";
+const classmates = () => Math.max(1, settings.classSize - 1);
+const maxUses = () => Math.max(2, Math.ceil(PROMPTS.length / classmates()));
+const varietyTarget = () => Math.min(10, classmates());
+
+/* ---------------- Student progress ---------------- */
+const progressKey = () => `fsw-progress-${settings.level}-${settings.count}`;
+const blankState = () => ({ player: state ? state.player : "", current: 0, entries: PROMPTS.map(() => ({ name: "", comment: "", done: false, passed: false })) });
+let state = null;
+let timer = { remaining: 15 * 60, running: false, id: null };
+
+function loadState() {
+  state = blankState();
+  try {
+    const raw = localStorage.getItem(progressKey());
+    if (raw) {
+      const saved = JSON.parse(raw);
+      if (saved && Array.isArray(saved.entries) && saved.entries.length === PROMPTS.length) state = saved;
+    }
+    const p = localStorage.getItem("fsw-player");
+    if (p && !state.player) state.player = p;
+  } catch (e) {}
+}
+function saveState() {
+  try {
+    localStorage.setItem(progressKey(), JSON.stringify(state));
+    localStorage.setItem("fsw-player", state.player || "");
+  } catch (e) {}
+}
+
+function words(text) { return text.trim().split(/\s+/).filter(w => w.length > 0).length; }
+function cleanName(n) { return n.trim().replace(/\s+/g, " ").toLowerCase(); }
+function escapeHTML(s) { return s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+/* ---------------- Points ---------------- */
+function cardPoints(entry) {
+  if (!entry.done) return 0;
+  if (isBeginner()) return 10;
+  let pts = 5;
+  const w = words(entry.comment);
+  if (w >= 6) pts += 5;
+  if (w >= 12) pts += 3;
+  return pts;
+}
+function uniqueClassmates() { return new Set(state.entries.filter(e => e.done).map(e => cleanName(e.name))).size; }
+function totals() {
+  const done = state.entries.filter(e => e.done).length;
+  const pts = state.entries.reduce((s, e) => s + cardPoints(e), 0);
+  const bonusVariety = uniqueClassmates() >= varietyTarget() ? 15 : 0;
+  const bonusAll = done === PROMPTS.length ? 25 : 0;
+  return { done, pts: pts + bonusVariety + bonusAll, bonusVariety, bonusAll };
+}
+function usesOf(name, exceptIndex) {
+  const n = cleanName(name);
+  return state.entries.filter((e, i) => i !== exceptIndex && e.done && cleanName(e.name) === n).length;
+}
+function commentHint(text) {
+  const w = words(text);
+  if (w >= 12) return { cls: "hint ok", txt: `${w} words: detailed comment, +8 pts` };
+  if (w >= 6) return { cls: "hint ok", txt: `${w} words: +5 pts. Add more detail for +3 more.` };
+  return { cls: "hint", txt: `${w} word${w === 1 ? "" : "s"}. Write 6 or more words for +5 pts.` };
+}
+
+/* ---------------- Static text that depends on settings ---------------- */
+function renderIntro() {
+  const L = LEVELS[settings.level];
+  document.body.classList.toggle("hide-comments", isBeginner());
+  document.getElementById("levelLabel").textContent = L.label;
+  document.getElementById("lede").textContent = L.lede;
+  document.getElementById("supportPhrases").innerHTML = L.support.map(t => `<span>${t}</span>`).join("");
+  document.getElementById("challengeBox").innerHTML = L.challenge;
+  document.getElementById("minsPill").textContent = `${settings.minutes} min`;
+
+  const uses = maxUses();
+  const usesText = uses >= PROMPTS.length ? "" : `<li>You can use each classmate’s name <b>only ${uses === 2 ? "two" : uses} times</b>. Talk to lots of people!</li>`;
+  document.getElementById("rulesList").innerHTML = isBeginner()
+    ? `<li>Say hello: “Hi, I’m … I’m from …”</li>
+       <li>Ask the question on the card.</li>
+       <li>If the answer is “yes,” write your classmate’s name.</li>
+       <li>Press <b>Stamp it</b> to get your points.</li>${usesText}`
+    : `<li>Say hello and introduce yourself: “Hi, I’m … I’m from …”</li>
+       <li>Ask the question on a card. Use the follow-up question to keep talking.</li>
+       <li>If the answer is “yes,” write your classmate’s name and a comment in a full sentence.</li>
+       <li>Press <b>Stamp it</b> to collect your points.</li>${usesText}`;
+
+  const vt = varietyTarget();
+  const variety = `<li>${vt} different classmates <b>+15 pts</b></li>`;
+  const all = `<li>All ${PROMPTS.length} stamps <b>+25 pts</b></li>`;
+  document.getElementById("pointsList").innerHTML = isBeginner()
+    ? `<li>Each classmate’s name <b>10 pts</b></li>${variety}${all}`
+    : `<li>Classmate’s name <b>5 pts</b></li><li>Comment with 6+ words <b>+5 pts</b></li><li>Detailed comment, 12+ words <b>+3 pts</b></li>${variety}${all}`;
+}
+
+/* ---------------- Cards ---------------- */
+function buildCards() {
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  const beginner = isBeginner();
+  PROMPTS.forEach((item, i) => {
+    const card = document.createElement("article");
+    card.className = `card tinted c-${colorOf(i)}`;
+    card.id = `card-${i}`;
+    card.innerHTML = `
+      <div class="stamp" aria-hidden="true"><div>FOUND<span class="stamp-pts" data-stamp-pts>+0</span></div></div>
+      <div class="card-top"><span class="card-num">${i + 1}</span><span class="emoji" aria-hidden="true">${item.i}</span><span class="card-count">Card ${i + 1} of ${PROMPTS.length}</span></div>
+      <p class="prompt">Find someone who ${item.p}</p>
+      <div class="ask">
+        <p><b>Ask:</b> ${item.q}</p>
+        <p><b>Follow-up:</b> ${item.f}</p>
+      </div>
+      <div class="field">
+        <label for="name-${i}">Classmate’s name</label>
+        <input id="name-${i}" type="text" autocomplete="off" placeholder="Who said yes?">
+      </div>
+      ${beginner ? "" : `<div class="field comment-only">
+        <label for="comment-${i}">What did you learn?</label>
+        <textarea id="comment-${i}" placeholder="Example: Mei lived in Korea and Canada, and she liked Canada because of the nature."></textarea>
+        <div class="hint" id="hint-${i}"></div>
+      </div>`}
+      <div class="warn" id="warn-${i}" role="alert"></div>
+      <div class="card-actions">
+        <span class="card-score" id="score-${i}">0 pts</span>
+        <button class="btn" type="button" id="btn-${i}">Stamp it</button>
+      </div>`;
+    grid.appendChild(card);
+
+    const nameEl = card.querySelector(`#name-${i}`);
+    nameEl.value = state.entries[i].name;
+    nameEl.addEventListener("input", () => { state.entries[i].name = nameEl.value; saveState(); clearWarn(i); });
+    nameEl.addEventListener("keydown", ev => { if (ev.key === "Enter" && beginner) toggleStamp(i); });
+    if (!beginner) {
+      const comEl = card.querySelector(`#comment-${i}`);
+      comEl.value = state.entries[i].comment;
+      comEl.addEventListener("input", () => { state.entries[i].comment = comEl.value; saveState(); updateHint(i); });
+      updateHint(i);
+    }
+    card.querySelector(`#btn-${i}`).addEventListener("click", () => toggleStamp(i));
+    renderCard(i);
+  });
+}
+function updateHint(i) {
+  const el = document.getElementById(`hint-${i}`);
+  if (!el) return;
+  const h = commentHint(state.entries[i].comment);
+  el.className = h.cls;
+  el.textContent = h.txt;
+}
+function clearWarn(i) { document.getElementById(`warn-${i}`).textContent = ""; }
+function renderCard(i) {
+  const e = state.entries[i];
+  const card = document.getElementById(`card-${i}`);
+  card.classList.toggle("done", e.done);
+  document.getElementById(`name-${i}`).disabled = e.done;
+  const com = document.getElementById(`comment-${i}`);
+  if (com) com.disabled = e.done;
+  const btn = document.getElementById(`btn-${i}`);
+  btn.textContent = e.done ? "Edit" : "Stamp it";
+  btn.className = e.done ? "btn ghost" : "btn";
+  const pts = cardPoints(e);
+  document.getElementById(`score-${i}`).textContent = `${e.done ? pts : 0} pts`;
+  card.querySelector("[data-stamp-pts]").textContent = `+${pts}`;
+}
+
+function toggleStamp(i) {
+  const e = state.entries[i];
+  const warn = document.getElementById(`warn-${i}`);
+  if (e.done) {
+    e.done = false;
+    saveState(); renderCard(i); renderTotals(false); renderResults(); renderNav();
+    document.getElementById(`name-${i}`).focus();
+    return;
+  }
+  const name = e.name.trim();
+  const uses = maxUses();
+  if (name.length < 2) { warn.textContent = "Write your classmate’s name first."; document.getElementById(`name-${i}`).focus(); return; }
+  if (state.player && cleanName(name) === cleanName(state.player)) { warn.textContent = "That’s your name! Find a classmate instead."; return; }
+  if (usesOf(name, i) >= uses) { warn.textContent = `You already used ${name} ${uses === 2 ? "two" : uses} times. Find a different classmate.`; return; }
+  if (!isBeginner() && words(e.comment) < 3) { warn.textContent = "Add a short comment about what you learned (3 words or more)."; document.getElementById(`comment-${i}`).focus(); return; }
+
+  const before = totals();
+  e.done = true;
+  saveState();
+  renderCard(i);
+  const card = document.getElementById(`card-${i}`);
+  card.classList.remove("just-done"); void card.offsetWidth; card.classList.add("just-done");
+  const after = totals();
+  renderTotals(true);
+  renderResults();
+  renderNav();
+
+  let msg = `Stamped! +${cardPoints(e)} points`;
+  if (!before.bonusVariety && after.bonusVariety) msg = `Bonus! You talked to ${varietyTarget()} different classmates: +15 points`;
+  if (!before.bonusAll && after.bonusAll) msg = `Amazing! All ${PROMPTS.length} stamps collected: +25 bonus points`;
+  toast(msg);
+  setTimeout(() => {
+    if (state.current !== i || !state.entries[i].done) return;
+    const j = nextUnfilled(i);
+    if (j === -1) { toast(`All ${PROMPTS.length} cards stamped! Check your results.`); document.getElementById("results").scrollIntoView({ behavior: "smooth" }); }
+    else showCard(j, true);
+  }, 1300);
+}
+
+function renderTotals(animate) {
+  const t = totals();
+  const ptsEl = document.getElementById("totalPoints");
+  ptsEl.textContent = t.pts;
+  if (animate) { ptsEl.classList.remove("bump"); void ptsEl.offsetWidth; ptsEl.classList.add("bump"); }
+  document.getElementById("fill").style.width = `${(t.done / PROMPTS.length) * 100}%`;
+  document.getElementById("progressLabel").textContent = `${t.done} of ${PROMPTS.length} stamps`;
+}
+
+function renderResults() {
+  const t = totals();
+  const beginner = isBeginner();
+  const cols = beginner ? 3 : 4;
+  const body = document.getElementById("resultsBody");
+  const rows = state.entries.map((e, i) => e.done ? `
+    <tr class="c-${colorOf(i)}"><td><span class="mini"></span>${i + 1}. Find someone who ${PROMPTS[i].p}</td>
+    <td>${escapeHTML(e.name.trim())}</td>
+    ${beginner ? "" : `<td>${escapeHTML(e.comment.trim())}</td>`}
+    <td>${cardPoints(e)}</td></tr>` : "").join("");
+  let extra = "";
+  if (t.bonusVariety) extra += `<tr><td colspan="${cols - 1}" class="medal">Bonus: ${varietyTarget()} different classmates</td><td class="medal">15</td></tr>`;
+  if (t.bonusAll) extra += `<tr><td colspan="${cols - 1}" class="medal">Bonus: all ${PROMPTS.length} stamps</td><td class="medal">25</td></tr>`;
+  body.innerHTML = (rows + extra) || `<tr><td colspan="${cols}">No stamps yet. Go talk to a classmate!</td></tr>`;
+  if (rows) body.innerHTML += `<tr><td colspan="${cols - 1}"><b>Total</b></td><td><b>${t.pts}</b></td></tr>`;
+
+  const who = (state.player || "").trim();
+  document.getElementById("resultsTitle").textContent = who ? `${who}’s results` : "My results";
+  document.getElementById("resultsSub").textContent = t.done
+    ? `${t.done} stamps · ${uniqueClassmates()} different classmates · ${t.pts} points`
+    : "Your stamps will appear here.";
+}
+
+let toastId = null;
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastId);
+  toastId = setTimeout(() => el.classList.remove("show"), 2600);
+}
+
+/* ---------------- Deck navigation ---------------- */
+function buildNav() {
+  const nav = document.getElementById("navdots");
+  nav.innerHTML = "";
+  PROMPTS.forEach((_, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = `navdot c-${colorOf(i)}`;
+    b.id = `dot-${i}`;
+    b.textContent = i + 1;
+    b.addEventListener("click", () => showCard(i, true));
+    nav.appendChild(b);
+  });
+}
+function renderNav() {
+  state.entries.forEach((e, i) => {
+    const d = document.getElementById(`dot-${i}`);
+    d.classList.toggle("done", e.done);
+    d.classList.toggle("passed", !e.done && !!e.passed);
+    d.classList.toggle("current", i === state.current);
+    const status = e.done ? "stamped" : e.passed ? "passed" : "not started";
+    d.setAttribute("aria-label", `Card ${i + 1}, ${status}`);
+    if (i === state.current) d.setAttribute("aria-current", "true"); else d.removeAttribute("aria-current");
+  });
+  document.getElementById("prevBtn").disabled = state.current === 0;
+  document.getElementById("nextBtn").disabled = state.current === PROMPTS.length - 1;
+  document.getElementById("passBtn").style.visibility = state.entries[state.current].done ? "hidden" : "visible";
+
+  const passed = state.entries.map((e, i) => (!e.done && e.passed) ? i : -1).filter(i => i >= 0);
+  const note = document.getElementById("passedNote");
+  if (passed.length) {
+    note.innerHTML = `You passed ${passed.length} card${passed.length === 1 ? "" : "s"}. <button class="linkbtn" type="button" id="backBtn">Go back to card ${passed[0] + 1}</button>`;
+    document.getElementById("backBtn").addEventListener("click", () => showCard(passed[0], true));
+  } else note.textContent = "";
+}
+function showCard(i, focus) {
+  state.current = Math.max(0, Math.min(PROMPTS.length - 1, i));
+  PROMPTS.forEach((_, j) => { document.getElementById(`card-${j}`).hidden = j !== state.current; });
+  saveState();
+  renderNav();
+  if (focus) {
+    const e = state.entries[state.current];
+    document.getElementById(e.done ? `btn-${state.current}` : `name-${state.current}`).focus({ preventScroll: true });
+    document.getElementById("play").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+function nextUnfilled(from) {
+  for (let k = 1; k <= PROMPTS.length; k++) {
+    const j = (from + k) % PROMPTS.length;
+    if (!state.entries[j].done) return j;
+  }
+  return -1;
+}
+document.getElementById("prevBtn").addEventListener("click", () => showCard(state.current - 1, true));
+document.getElementById("nextBtn").addEventListener("click", () => showCard(state.current + 1, true));
+document.getElementById("passBtn").addEventListener("click", () => {
+  const i = state.current;
+  state.entries[i].passed = true;
+  const j = nextUnfilled(i);
+  if (j === -1 || j === i) { saveState(); renderNav(); toast("This is your last card. Find someone for it!"); return; }
+  showCard(j, true);
+  toast(`Card ${i + 1} passed. You can come back to it anytime.`);
+});
+
+/* ---------------- Timer ---------------- */
+function resetTimer() {
+  clearInterval(timer.id);
+  timer = { remaining: settings.minutes * 60, running: false, id: null };
+  document.getElementById("timerBtn").textContent = "Start timer";
+  renderTimer();
+}
+function renderTimer() {
+  const m = Math.floor(timer.remaining / 60), s = timer.remaining % 60;
+  const el = document.getElementById("timerDisplay");
+  el.textContent = `${m}:${String(s).padStart(2, "0")}`;
+  el.classList.toggle("low", timer.remaining <= 60);
+}
+document.getElementById("timerBtn").addEventListener("click", () => {
+  const btn = document.getElementById("timerBtn");
+  if (timer.remaining === 0) { timer.remaining = settings.minutes * 60; renderTimer(); }
+  if (timer.running) {
+    clearInterval(timer.id); timer.running = false; btn.textContent = "Resume";
+  } else {
+    timer.running = true; btn.textContent = "Pause";
+    timer.id = setInterval(() => {
+      timer.remaining--;
+      renderTimer();
+      if (timer.remaining <= 0) {
+        clearInterval(timer.id); timer.running = false; btn.textContent = "Restart";
+        toast("Time’s up! Go back to your seat and check your results.");
+        document.getElementById("results").scrollIntoView({ behavior: "smooth" });
+      }
+    }, 1000);
+  }
+});
+
+/* ---------------- Apply settings ---------------- */
+let appliedSig = "";
+function applySettings(next, announce) {
+  settings = normalize(next);
+  const sig = JSON.stringify(settings);
+  if (sig === appliedSig) return;
+  const firstRun = appliedSig === "";
+  appliedSig = sig;
+  PROMPTS = BANKS[settings.level].slice(0, settings.count);
+  loadState();
+  renderIntro();
+  buildCards();
+  buildNav();
+  showCard(typeof state.current === "number" ? state.current : 0, false);
+  renderTotals(false);
+  renderResults();
+  resetTimer();
+  document.getElementById("playerName").value = state.player || "";
+  if (announce && !firstRun) toast("Your teacher updated the activity.");
+}
+
+document.getElementById("playerName").addEventListener("input", ev => { state.player = ev.target.value; saveState(); renderResults(); });
+document.getElementById("printBtn").addEventListener("click", () => window.print());
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if (!confirm("Clear all your names, comments, and points?")) return;
+  state = { player: "", current: 0, entries: PROMPTS.map(() => ({ name: "", comment: "", done: false, passed: false })) };
+  saveState();
+  document.getElementById("playerName").value = "";
+  buildCards(); buildNav(); showCard(0, false); renderTotals(false); renderResults();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+/* ---------------- Teacher panel ---------------- */
+let draft = { ...settings };
+let settingsDoc = null;   // shared db doc when available
+let canSaveShared = false;
+
+function renderPanel() {
+  document.querySelectorAll('input[name="level"]').forEach(r => { r.checked = r.value === draft.level; });
+  const max = BANKS[draft.level].length;
+  draft.count = Math.min(Math.max(draft.count, LIMITS.count.min), max);
+  document.getElementById("outCount").textContent = draft.count;
+  document.getElementById("countRange").textContent = `of ${max}${draft.level === "beginner" ? " easier questions" : " questions"}`;
+  document.getElementById("outMinutes").textContent = draft.minutes;
+  document.getElementById("outClass").textContent = draft.classSize;
+  const cm = Math.max(1, draft.classSize - 1);
+  const uses = Math.max(2, Math.ceil(draft.count / cm));
+  document.getElementById("classNote").textContent =
+    `Each student has ${cm} classmate${cm === 1 ? "" : "s"}, so they can use each name up to ${uses} times. The variety bonus is for ${Math.min(10, cm)} different classmate${Math.min(10, cm) === 1 ? "" : "s"}.`;
+  document.getElementById("syncNote").textContent = canSaveShared
+    ? "Saving updates every student’s page."
+    : "These settings apply to this device only.";
+}
+document.querySelectorAll('input[name="level"]').forEach(r => r.addEventListener("change", () => {
+  draft.level = r.value;
+  draft.count = BANKS[r.value].length;
+  renderPanel();
+}));
+document.querySelectorAll("[data-step]").forEach(b => b.addEventListener("click", () => {
+  const k = b.dataset.step, d = parseInt(b.dataset.d, 10);
+  const lim = k === "count" ? { min: LIMITS.count.min, max: BANKS[draft.level].length } : LIMITS[k];
+  draft[k] = Math.max(lim.min, Math.min(lim.max, draft[k] + d));
+  renderPanel();
+}));
+document.getElementById("teacherBtn").addEventListener("click", () => {
+  draft = { ...settings };
+  renderPanel();
+  document.getElementById("panel").showModal();
+});
+document.getElementById("panelCancel").addEventListener("click", () => document.getElementById("panel").close());
+document.getElementById("panelSave").addEventListener("click", async () => {
+  const next = normalize(draft);
+  const btn = document.getElementById("panelSave");
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(next)); } catch (e) {}
+  if (canSaveShared && settingsDoc) {
+    btn.disabled = true;
+    try {
+      await settingsDoc.set(next);
+    } catch (e) {
+      toast("Couldn’t share the settings. They are saved on this device only.");
+    }
+    btn.disabled = false;
+  }
+  applySettings(next, false);
+  document.getElementById("panel").close();
+  toast("Settings saved.");
+});
+
+/* ---------------- Startup ---------------- */
+(function init() {
+  let local = null;
+  try { local = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "null"); } catch (e) {}
+  applySettings(local || DEFAULTS, false);
+  connectShared();
+})();
+
+async function connectShared() {
+  let db = null, user = null;
+  try { [db, user] = await Promise.all([window.claude?.use?.("db"), window.claude?.use?.("user")]); } catch (e) {}
+  const owner = user ? await user.isOwner().catch(() => false) : false;
+  const teacherBtn = document.getElementById("teacherBtn");
+
+  if (!db) {
+    // No shared storage in this view: allow local settings only when nobody can be identified as a student.
+    teacherBtn.hidden = !!user && !owner;
+    if (!user) teacherBtn.hidden = false;
+    return;
+  }
+  settingsDoc = db.doc("config/settings");
+  canSaveShared = owner;
+  teacherBtn.hidden = !owner;
+  settingsDoc.onSnapshot(snap => {
+    if (snap.exists) applySettings(snap.data(), true);
+  }, () => {});
+}
+
+</script>
+</body>
+</html>
